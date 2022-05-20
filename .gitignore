@@ -1,0 +1,4 @@
+# Contains secrets
+.vscode
+.env.test
+cosign.key
