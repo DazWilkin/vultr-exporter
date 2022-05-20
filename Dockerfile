@@ -30,7 +30,7 @@ FROM scratch
 
 LABEL org.opencontainers.image.source https://github.com/DazWilkin/vultr-exporter
 
-COPY --from=build /go/bin/server /
+COPY --from=build /bin/server /
 COPY --from=build /etc/passwd /etc/passwd
 
 USER scratchuser
