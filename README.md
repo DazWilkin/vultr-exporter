@@ -8,7 +8,7 @@
 
 ## Image
 
-+ `ghcr.io/dazwilkin/vultr-exporter:68ce72bb0e0dc271ea3d86c1368e6c279e10d940`
++ `ghcr.io/dazwilkin/vultr-exporter:82eb949e3a9cf3cffe95547ee6c4a76f584a60e6`
 
 ## API Key
 
@@ -56,7 +56,7 @@ go run ./cmd/server \
 ```bash
 cosign verify \
 --key=./cosign.pub \
-ghcr.io/dazwilkin/vultr-exporter:68ce72bb0e0dc271ea3d86c1368e6c279e10d940
+ghcr.io/dazwilkin/vultr-exporter:82eb949e3a9cf3cffe95547ee6c4a76f584a60e6
 ```
 
 > **NOTE** cosign.pub may be downloaded [here](/cosign.pub)
