@@ -31,7 +31,17 @@ vultr_exporter_start_time 1.653072239e+09
 
 ## Go
 
+```bash
+export API_KEY="[YOUR-API-KEY]"
+
+go run ./cmd/server \
+--endpoint=0.0.0.0:8080 \
+--path=/metrics
+```
+
 ## Container
+
+
 
 ## Kubernetes
 
