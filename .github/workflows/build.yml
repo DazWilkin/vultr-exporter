@@ -7,10 +7,10 @@ on:
 
 jobs:
   vultr-exporter:
-    name: cultr-exporter
+    name: vultr-exporter
     runs-on: ubuntu-latest
     env:
-      REPO: dazwilkin/gcp-exporter
+      REPO: dazwilkin/vultr-exporter
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -50,14 +50,14 @@ jobs:
           ghcr.io/${{ env.REPO }}:${{ github.sha }}
         env:
           COSIGN_PASSWORD: ""          
-      - name: revise occurrences of the image
+      - name: Revise occurrences of the image
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Actions"
 
           for FILENAME in "./README.md"
           do
-            echo "Replacing: ${REPO}-${TYPE}"
+            echo "Replacing: ${REPO}"
             sed \
             --in-place \
             "s|${{ env.REPO }}:[0-9a-f]\{40\}|${{ env.REPO }}:${{ github.sha }}|g" \
