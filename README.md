@@ -218,3 +218,7 @@ go install github.com/sigstore/cosign/cmd/cosign@latest
 + [govultr SDK](https://github.com/vultr/govultr)
 + [pkg.go.dev: Cluster](https://pkg.go.dev/github.com/vultr/govultr/v2#Cluster)
 + [pkg.go.dev: NodePool](https://pkg.go.dev/github.com/vultr/govultr/v2#NodePool)
+
+<hr/>
+<br/>
+<a href="https://www.buymeacoffee.com/dazwilkin" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
