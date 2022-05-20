@@ -23,17 +23,12 @@ RUN env ${GOLANG_OPTIONS} \
     -o /bin/server \
     ./cmd/server
 
-RUN useradd --uid=10001 scratchuser
 
-
-FROM scratch
+FROM gcr.io/distroless/base-debian11
 
 LABEL org.opencontainers.image.source https://github.com/DazWilkin/vultr-exporter
 
 COPY --from=build /bin/server /
-COPY --from=build /etc/passwd /etc/passwd
-
-USER scratchuser
 
 ENTRYPOINT ["/server"]
 CMD ["--entrypoint=0.0.0.0:8080","--path=/metrics"]
