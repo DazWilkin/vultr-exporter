@@ -164,7 +164,35 @@ podman build \
 
 ## Prometheus
 
+```YAML
+global:
+  scrape_interval: 1m
+  evaluation_interval: 1m
+
+rule_files:
+- "/etc/alertmanager/rules.yml"
+
+  # Vultr Exporter
+- job_name: "vultr-exporter"
+  static_configs:
+  - targets:
+    - "localhost:8080"
+```
+
 ## Alertmanager
+
+```YAML
+groups:
+- name: vultr_exporter
+  rules:
+  - alert: vultr_kubernetes_cluster_up
+    expr: vultr_kubernetes_cluster_up{} > 0
+    for: 6h
+    labels:
+      severity: page
+    annotations:
+      summary: Vultr Kubernetes Engine clusters
+```
 
 ## Sigstore
 
