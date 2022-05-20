@@ -20,14 +20,29 @@ export API_KEY="[YOUR-API-KEY]"
 
 ## Metrics
 
+|Name|Type|Description|
+|----|----|-----------|
+|`vultr_exporter_build_info`|Counter|Build status (1=running)|
+|`vultr_exporter_kubernetes_cluster_up`|Gauge|Number of Kubernetes clusters|
+|`vultr_exporter_kubernetes_node_pool`|Gauge|Number of Kubernetes cluster Node Pools|
+|`vultr_exporter_kubernetes_node`|Gauge|Number of Kubernetes Cluster Nodes|
+
 ```bash
 # HELP vultr_exporter_build_info A metric with a constant '1' value labeled by OS version, Go version, and the Git commit of the exporter
 # TYPE vultr_exporter_build_info counter
 vultr_exporter_build_info{git_commit="",go_version="go1.18",os_version=""} 1
+# HELP vultr_exporter_kubernetes_cluster_up 1 if the cluster is running, 0 otherwise
+# TYPE vultr_exporter_kubernetes_cluster_up counter
+vultr_exporter_kubernetes_cluster_up{label="ackal",region="sea",status="active",version="v1.23.5+3"} 1
+# HELP vultr_exporter_kubernetes_node Number of Nodes associated with the cluster
+# TYPE vultr_exporter_kubernetes_node gauge
+vultr_exporter_kubernetes_node{label="nodepool",plan="vc2-1c-2gb",status="active",tag="dev"} 1
+# HELP vultr_exporter_kubernetes_node_pool Number of Node Pools associated with the cluster
+# TYPE vultr_exporter_kubernetes_node_pool gauge
+vultr_exporter_kubernetes_node_pool{label="ackal",region="sea",status="active",version="v1.23.5+3"} 1
 # HELP vultr_exporter_start_time Exporter start time in Unix epoch seconds
 # TYPE vultr_exporter_start_time gauge
-vultr_exporter_start_time 1.653072239e+09
-```
+vultr_exporter_start_time 1.653085629e+09```
 
 ## Go
 
@@ -41,9 +56,111 @@ go run ./cmd/server \
 
 ## Container
 
+```bash
+API_KEY="[YOUR-API-KEY]"
 
+IMAGE="ghcr.io/dazwilkin/vultr-exporter:82eb949e3a9cf3cffe95547ee6c4a76f584a60e6"
+
+podman run \
+--interactive --tty --rm \
+--publish=8080:8080 \
+--env=API_KEY=${API_KEY} \
+${IMAGE} \
+  --endpoint=0.0.0.0:8080 \
+  --path=/metrics
+```
 
 ## Kubernetes
+
+```bash
+NAMESPACE="exporter"
+
+kubectl create secret vultr db-user-pass \
+--namespace=${NAMESPACE} \
+--from-literal=apiKey=${API_KEY}
+
+echo "
+apiVersion: v1
+kind: List
+metadata: {}
+items:
+  - kind: Service
+    apiVersion: v1
+    metadata:
+      labels:
+        app: vultr-exporter
+      name: vultr-exporter
+    spec:
+      selector:
+        app: vultr-exporter
+      ports:
+        - name: http
+          port: 8080
+          targetPort: 8080
+  - kind: Deployment
+    apiVersion: apps/v1
+    metadata:
+      labels:
+        app: vultr-exporter
+      name: vultr-exporter
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: vultr-exporter
+      template:
+        metadata:
+          labels:
+            app: vultr-exporter
+        spec:
+          containers:
+            - name: vultr-exporter
+              image: ${IMAGE}
+              command:
+              - /server
+              args:
+              - --endpoint=0.0.0.0:8080
+              - --path=/metrics
+              env:
+                - name: API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: vultr
+                      key: apiKey
+                      optional: false
+              ports:
+                - name: metrics
+                  containerPort: 8080
+          restartPolicy: Always
+" | kubectl apply --filename=- --namespace=${NAMESPACE}
+
+# Use your preferred HTTP Load-balancer
+kubectl port-forward deployment/vultr-exporter 8080:8080 \
+--namespace=${NAMESPACE}
+```
+
+## Raspberry Pi 4
+
+```bash
+if [ "$(getconf LONG_BIT)" -eq 64 ]
+then
+  # 64-bit Raspian
+  ARCH="GOARCH=arm64"
+  TAG="arm64"
+else
+  # 32-bit Raspian
+  ARCH="GOARCH=arm GOARM=7"
+  TAG="arm32v7"
+fi
+
+podman build \
+--build-arg=GOLANG_OPTIONS="CGO_ENABLED=0 GOOS=linux ${ARCH}" \
+--build-arg=COMMIT=$(git rev-parse HEAD) \
+--build-arg=VERSION=$(uname --kernel-release) \
+--tag=ghcr.io/dazwilkin/vultr-exporter:${TAG} \
+--file=./Dockerfile \
+.
+```
 
 ## Prometheus
 
@@ -66,3 +183,10 @@ To install cosign, e.g.:
 ```bash
 go install github.com/sigstore/cosign/cmd/cosign@latest
 ```
+
+## References
+
++ [Vultr API: List all Kubernetes Clusters](https://www.vultr.com/api/#operation/create-kubernetes-cluster)
++ [govultr SDK](https://github.com/vultr/govultr)
++ [pkg.go.dev: Cluster](https://pkg.go.dev/github.com/vultr/govultr/v2#Cluster)
++ [pkg.go.dev: NodePool](https://pkg.go.dev/github.com/vultr/govultr/v2#NodePool)
