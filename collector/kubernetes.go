@@ -27,7 +27,7 @@ func NewKubernetesCollector(s System, client *govultr.Client, log logr.Logger) *
 		Client: client,
 		Log:    log,
 		Up: prometheus.NewDesc(
-			prometheus.BuildFQName(s.Namespace, s.Subsystem, "up"),
+			prometheus.BuildFQName(s.Namespace, s.Subsystem, "kubernetes_cluster_up"),
 			"1 if the cluster is running, 0 otherwise",
 			[]string{
 				"label",
@@ -38,7 +38,7 @@ func NewKubernetesCollector(s System, client *govultr.Client, log logr.Logger) *
 			nil,
 		),
 		NodePools: prometheus.NewDesc(
-			prometheus.BuildFQName(s.Namespace, s.Subsystem, "node_pools"),
+			prometheus.BuildFQName(s.Namespace, s.Subsystem, "kubernetes_node_pool"),
 			"Number of Node Pools associated with the cluster",
 			[]string{
 				"label",
@@ -49,8 +49,8 @@ func NewKubernetesCollector(s System, client *govultr.Client, log logr.Logger) *
 			nil,
 		),
 		Nodes: prometheus.NewDesc(
-			prometheus.BuildFQName(s.Namespace, s.Subsystem, "nodes"),
-			"Number of Node Pools associated with the cluster",
+			prometheus.BuildFQName(s.Namespace, s.Subsystem, "kubernetes_node"),
+			"Number of Nodes associated with the cluster",
 			[]string{
 				"label",
 				"plan",
