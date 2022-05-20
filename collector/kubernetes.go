@@ -89,12 +89,12 @@ func (c *KubernetesCollector) Collect(ch chan<- prometheus.Metric) {
 			ch <- prometheus.MustNewConstMetric(
 				c.Up,
 				prometheus.CounterValue,
-				func(cluster govultr.Cluster) (result float64) {
-					if cluster.Status == "active" {
+				func(status string) (result float64) {
+					if status == "active" {
 						result = 1.0
 					}
 					return result
-				}(cluster),
+				}(cluster.Status),
 				[]string{
 					cluster.Label,
 					cluster.Region,
