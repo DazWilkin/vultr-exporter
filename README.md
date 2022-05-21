@@ -73,9 +73,15 @@ ${IMAGE} \
 ## Kubernetes
 
 ```bash
+API_KEY="[YOUR-API-KEY]"
+
+IMAGE="ghcr.io/dazwilkin/vultr-exporter:ada6819cb8f9b7886a468b92ab83d04bb91c0967"
+
 NAMESPACE="exporter"
 
-kubectl create secret vultr \
+kubectl create namespace ${NAMESPACE}
+
+kubectl create secret generic vultr \
 --namespace=${NAMESPACE} \
 --from-literal=apiKey=${API_KEY}
 
