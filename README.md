@@ -2,7 +2,7 @@
 
 > **NOTE** Currently only supports querying [Vultr Kubernetes Engine (VKE)](https://www.vultr.com/kubernetes/) clusters
 
-[![build-container](https://github.com/DazWilkin/vultr-exporter/actions/workflows/build-container.yaml/badge.svg)](https://github.com/DazWilkin/vultr-exporter/actions/workflows/build-container.yaml)
+[![build-containers](https://github.com/DazWilkin/vultr-exporter/actions/workflows/build.yml/badge.svg)](https://github.com/DazWilkin/vultr-exporter/actions/workflows/build.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/DazWilkin/vultr-exporter.svg)](https://pkg.go.dev/github.com/DazWilkin/vultr-exporter)
 [![Go Report Card](https://goreportcard.com/badge/github.com/dazwilkin/vultr-exporter)](https://goreportcard.com/report/github.com/dazwilkin/vultr-exporter)
 
