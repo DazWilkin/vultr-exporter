@@ -75,7 +75,7 @@ ${IMAGE} \
 ```bash
 NAMESPACE="exporter"
 
-kubectl create secret vultr db-user-pass \
+kubectl create secret vultr \
 --namespace=${NAMESPACE} \
 --from-literal=apiKey=${API_KEY}
 
