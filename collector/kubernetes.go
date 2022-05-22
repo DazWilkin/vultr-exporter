@@ -70,13 +70,14 @@ func (c *KubernetesCollector) Collect(ch chan<- prometheus.Metric) {
 	clusters, meta, err := c.Client.Kubernetes.ListClusters(ctx, options)
 	if err != nil {
 		log.Info("Unable to ListClusters")
+		return
 	}
 
 	log.Info("Response",
 		"meta", meta,
 	)
 
-	// Enumerate all of the projects
+	// Enumerate all of the clusters
 	var wg sync.WaitGroup
 	for _, cluster := range clusters {
 		wg.Add(1)
