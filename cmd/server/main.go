@@ -96,9 +96,9 @@ func NewVultrClient(name, key string) *govultr.Client {
 	client := govultr.NewClient(oauth2.NewClient(ctx, ts))
 
 	// Optional changes
-	_ = client.SetBaseURL("https://api.vultr.com")
+	// _ = client.SetBaseURL("https://api.vultr.com")
 	client.SetUserAgent(name)
-	client.SetRateLimit(500)
+	// client.SetRateLimit(500)
 	return client
 }
 func main() {
@@ -143,6 +143,7 @@ func main() {
 	}
 	registry.MustRegister(collector.NewExporterCollector(s, b, log))
 	registry.MustRegister(collector.NewKubernetesCollector(s, client, log))
+	registry.MustRegister(collector.NewLoadBalancerCollector(s, client, log))
 
 	mux := http.NewServeMux()
 	mux.Handle("/", http.HandlerFunc(handleRoot))
