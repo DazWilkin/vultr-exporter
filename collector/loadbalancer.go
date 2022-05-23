@@ -36,7 +36,7 @@ func NewLoadBalancerCollector(s System, client *govultr.Client, log logr.Logger)
 			nil,
 		),
 		Instances: prometheus.NewDesc(
-			prometheus.BuildFQName(s.Namespace, s.Subsystem, "instances_total"),
+			prometheus.BuildFQName(s.Namespace, s.Subsystem, "instances"),
 			"Number of Load balancer instances",
 			[]string{
 				"label",
