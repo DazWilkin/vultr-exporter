@@ -28,8 +28,8 @@ func NewKubernetesCollector(s System, client *govultr.Client, log logr.Logger) *
 		Client: client,
 		Log:    log,
 		Up: prometheus.NewDesc(
-			prometheus.BuildFQName(s.Namespace, subsystem, "cluster"),
-			"Total number of clusters",
+			prometheus.BuildFQName(s.Namespace, subsystem, "cluster_up"),
+			"Kubernetes cluster",
 			[]string{
 				"label",
 				"region",
@@ -40,7 +40,7 @@ func NewKubernetesCollector(s System, client *govultr.Client, log logr.Logger) *
 		),
 		NodePools: prometheus.NewDesc(
 			prometheus.BuildFQName(s.Namespace, subsystem, "node_pool"),
-			"Total number of Node Pools",
+			"Number of Node Pools",
 			[]string{
 				"label",
 				"region",
@@ -51,7 +51,7 @@ func NewKubernetesCollector(s System, client *govultr.Client, log logr.Logger) *
 		),
 		Nodes: prometheus.NewDesc(
 			prometheus.BuildFQName(s.Namespace, subsystem, "node"),
-			"Total number of Nodes",
+			"Number of Nodes",
 			[]string{
 				"label",
 				"plan",
