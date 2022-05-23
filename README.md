@@ -8,7 +8,7 @@
 
 ## Image
 
-+ `ghcr.io/dazwilkin/vultr-exporter:9c10c337c2ae594c4f7affbd1e70c98b89dac5c4`
++ `ghcr.io/dazwilkin/vultr-exporter:951a25a34ca63aae85ce4f00199641aa5eb3712a`
 
 ## API Key
 
@@ -59,7 +59,7 @@ go run ./cmd/server \
 ```bash
 API_KEY="[YOUR-API-KEY]"
 
-IMAGE="ghcr.io/dazwilkin/vultr-exporter:9c10c337c2ae594c4f7affbd1e70c98b89dac5c4"
+IMAGE="ghcr.io/dazwilkin/vultr-exporter:951a25a34ca63aae85ce4f00199641aa5eb3712a"
 
 podman run \
 --interactive --tty --rm \
@@ -75,7 +75,7 @@ ${IMAGE} \
 ```bash
 API_KEY="[YOUR-API-KEY]"
 
-IMAGE="ghcr.io/dazwilkin/vultr-exporter:9c10c337c2ae594c4f7affbd1e70c98b89dac5c4"
+IMAGE="ghcr.io/dazwilkin/vultr-exporter:951a25a34ca63aae85ce4f00199641aa5eb3712a"
 
 NAMESPACE="exporter"
 
@@ -207,7 +207,7 @@ groups:
 ```bash
 cosign verify \
 --key=./cosign.pub \
-ghcr.io/dazwilkin/vultr-exporter:9c10c337c2ae594c4f7affbd1e70c98b89dac5c4
+ghcr.io/dazwilkin/vultr-exporter:951a25a34ca63aae85ce4f00199641aa5eb3712a
 ```
 
 > **NOTE** cosign.pub may be downloaded [here](/cosign.pub)
