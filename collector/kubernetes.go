@@ -22,13 +22,14 @@ type KubernetesCollector struct {
 
 // NewKubernetesCollector creates a new KubernetesCollector
 func NewKubernetesCollector(s System, client *govultr.Client, log logr.Logger) *KubernetesCollector {
+	subsystem := "kubernetes"
 	return &KubernetesCollector{
 		System: s,
 		Client: client,
 		Log:    log,
 		Up: prometheus.NewDesc(
-			prometheus.BuildFQName(s.Namespace, s.Subsystem, "kubernetes_cluster_up"),
-			"1 if the cluster is running, 0 otherwise",
+			prometheus.BuildFQName(s.Namespace, subsystem, "cluster"),
+			"Total number of clusters",
 			[]string{
 				"label",
 				"region",
@@ -38,8 +39,8 @@ func NewKubernetesCollector(s System, client *govultr.Client, log logr.Logger) *
 			nil,
 		),
 		NodePools: prometheus.NewDesc(
-			prometheus.BuildFQName(s.Namespace, s.Subsystem, "kubernetes_node_pool"),
-			"Number of Node Pools associated with the cluster",
+			prometheus.BuildFQName(s.Namespace, subsystem, "node_pool"),
+			"Total number of Node Pools",
 			[]string{
 				"label",
 				"region",
@@ -49,8 +50,8 @@ func NewKubernetesCollector(s System, client *govultr.Client, log logr.Logger) *
 			nil,
 		),
 		Nodes: prometheus.NewDesc(
-			prometheus.BuildFQName(s.Namespace, s.Subsystem, "kubernetes_node"),
-			"Number of Nodes associated with the cluster",
+			prometheus.BuildFQName(s.Namespace, subsystem, "node"),
+			"Total number of Nodes",
 			[]string{
 				"label",
 				"plan",

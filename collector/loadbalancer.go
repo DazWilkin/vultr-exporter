@@ -20,13 +20,14 @@ type LoadBalancerCollector struct {
 
 // NewLoadBalancerCollector creates a new LoadBalancerCollector
 func NewLoadBalancerCollector(s System, client *govultr.Client, log logr.Logger) *LoadBalancerCollector {
+	subsystem := "load_balancer"
 	return &LoadBalancerCollector{
 		System: s,
 		Client: client,
 		Log:    log,
 		Up: prometheus.NewDesc(
-			prometheus.BuildFQName(s.Namespace, s.Subsystem, "load_balancer_up"),
-			"1 if the load balancer is running, 0 otherwise",
+			prometheus.BuildFQName(s.Namespace, subsystem, ""),
+			"Total number of Load balancers",
 			[]string{
 				"label",
 				"region",
@@ -35,8 +36,8 @@ func NewLoadBalancerCollector(s System, client *govultr.Client, log logr.Logger)
 			nil,
 		),
 		Instances: prometheus.NewDesc(
-			prometheus.BuildFQName(s.Namespace, s.Subsystem, "load_balancer_instances"),
-			"Number of Load Balancer instances",
+			prometheus.BuildFQName(s.Namespace, s.Subsystem, "instances"),
+			"Total number of Load balancer instances",
 			[]string{
 				"label",
 				"region",
