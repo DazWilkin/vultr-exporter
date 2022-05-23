@@ -72,6 +72,8 @@ ${IMAGE} \
 
 ## Kubernetes
 
+> **NOTE** If running `vult-exporter` on VKE, ensure that you're `API_KEY` includes the public IP addresses of the cluster's nodes as these will be originating Vultr API requests. I think these access control changes can't be done programmatically.
+
 ```bash
 API_KEY="[YOUR-API-KEY]"
 
@@ -143,7 +145,28 @@ items:
 # Use your preferred HTTP Load-balancer
 kubectl port-forward deployment/vultr-exporter 8080:8080 \
 --namespace=${NAMESPACE}
+
+# To use a Vultr Load balancer
+# Replaces the service created above w/ a Vultr Load balancer
+echo "
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    service.beta.kubernetes.io/vultr-loadbalancer-protocol: "http"
+  name: vultr-exporter
+spec:
+  type: LoadBalancer
+  selector:
+    app: vultr-exporter
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+" | kubectl apply --filename=- --namespace=${NAMESPACE}
 ```
+
+
 
 ## Raspberry Pi 4
 
