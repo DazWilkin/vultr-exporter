@@ -26,7 +26,7 @@ func NewBlockStorageCollector(s System, client *govultr.Client, log logr.Logger)
 		Client: client,
 		Log:    log,
 		Up: prometheus.NewDesc(
-			prometheus.BuildFQName(s.Namespace, subsystem, "block_up"),
+			prometheus.BuildFQName(s.Namespace, subsystem, "up"),
 			"Block Storage",
 			[]string{
 				"label",
@@ -37,7 +37,7 @@ func NewBlockStorageCollector(s System, client *govultr.Client, log logr.Logger)
 		),
 		Block: prometheus.NewDesc(
 			prometheus.BuildFQName(s.Namespace, subsystem, "size"),
-			"Block Storage",
+			"Size of Block Storage",
 			[]string{
 				"label",
 				"region",
@@ -71,6 +71,7 @@ func (c *BlockStorageCollector) Collect(ch chan<- prometheus.Metric) {
 			"Block", block,
 		)
 		go func(block govultr.BlockStorage) {
+			defer wg.Done()
 			ch <- prometheus.MustNewConstMetric(
 				c.Up,
 				prometheus.CounterValue,
