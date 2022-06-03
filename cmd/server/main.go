@@ -142,6 +142,7 @@ func main() {
 		StartTime: StartTime,
 	}
 	registry.MustRegister(collector.NewExporterCollector(s, b, log))
+	registry.MustRegister(collector.NewBlockStorageCollector(s, client, log))
 	registry.MustRegister(collector.NewKubernetesCollector(s, client, log))
 	registry.MustRegister(collector.NewLoadBalancerCollector(s, client, log))
 
