@@ -27,29 +27,20 @@ export API_KEY="[YOUR-API-KEY]"
 
 ## Metrics
 
+All metrics are prefixed `vultr_`
+
 |Name|Type|Description|
 |----|----|-----------|
-|`vultr_exporter_build_info`|Counter|Build status (1=running)|
-|`vultr_exporter_kubernetes_cluster_up`|Gauge|Number of Kubernetes clusters|
-|`vultr_exporter_kubernetes_node_pool`|Gauge|Number of Kubernetes cluster Node Pools|
-|`vultr_exporter_kubernetes_node`|Gauge|Number of Kubernetes Cluster Nodes|
-
-```bash
-# HELP vultr_exporter_build_info A metric with a constant '1' value labeled by OS version, Go version, and the Git commit of the exporter
-# TYPE vultr_exporter_build_info counter
-vultr_exporter_build_info{git_commit="",go_version="go1.18",os_version=""} 1
-# HELP vultr_exporter_kubernetes_cluster_up 1 if the cluster is running, 0 otherwise
-# TYPE vultr_exporter_kubernetes_cluster_up counter
-vultr_exporter_kubernetes_cluster_up{label="ackal",region="sea",status="active",version="v1.23.5+3"} 1
-# HELP vultr_exporter_kubernetes_node Number of Nodes associated with the cluster
-# TYPE vultr_exporter_kubernetes_node gauge
-vultr_exporter_kubernetes_node{label="nodepool",plan="vc2-1c-2gb",status="active",tag="dev"} 1
-# HELP vultr_exporter_kubernetes_node_pool Number of Node Pools associated with the cluster
-# TYPE vultr_exporter_kubernetes_node_pool gauge
-vultr_exporter_kubernetes_node_pool{label="ackal",region="sea",status="active",version="v1.23.5+3"} 1
-# HELP vultr_exporter_start_time Exporter start time in Unix epoch seconds
-# TYPE vultr_exporter_start_time gauge
-vultr_exporter_start_time 1.653085629e+09```
+|`block_storage_up`|Counter|Number of Block Storage volumes|
+|`block_storage_size`|Gauge|Size (GB) of Block Storage volumes|
+|`exporter_build_info`|Counter|Build status (1=running)|
+|`exporter_start_time`|Gauge|Start time (Unix epoch) of Exporter|
+|`kubernetes_cluster_up`|Counter|Number of Kubernetes clusters|
+|`kubernetes_node_pool`|Gauge|Number of Kubernetes cluster Node Pools|
+|`kubernetes_node`|Gauge|Number of Kubernetes Cluster Nodes|
+|`load_balancer_up`|Number of Load Balancers|
+|`load_balancer_instances`|Number of Load Balancer instances|
+|`reserved_ips_up`|Counter|Number of Reserved IPs|
 
 ## Go
 
