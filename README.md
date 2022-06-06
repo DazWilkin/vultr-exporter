@@ -4,27 +4,6 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/DazWilkin/vultr-exporter.svg)](https://pkg.go.dev/github.com/DazWilkin/vultr-exporter)
 [![Go Report Card](https://goreportcard.com/badge/github.com/dazwilkin/vultr-exporter)](https://goreportcard.com/report/github.com/dazwilkin/vultr-exporter)
 
-## Resources
-
-|Resource|
-|--------|
-|Block Storage|
-|Kubernetes|
-|Load Balancers|
-|Reserved IPs|
-
-## Image
-
-+ `ghcr.io/dazwilkin/vultr-exporter:681a23e90b1f223275031d8a4e00a99e33c9ad3a`
-
-## API Key
-
-The Exporter needs access to your Vultr API Key
-
-```bash
-export API_KEY="[YOUR-API-KEY]"
-```
-
 ## Metrics
 
 All metrics are prefixed `vultr_`
@@ -41,6 +20,18 @@ All metrics are prefixed `vultr_`
 |`load_balancer_up`|Number of Load Balancers|
 |`load_balancer_instances`|Number of Load Balancer instances|
 |`reserved_ips_up`|Counter|Number of Reserved IPs|
+
+## Image
+
++ `ghcr.io/dazwilkin/vultr-exporter:681a23e90b1f223275031d8a4e00a99e33c9ad3a`
+
+## API Key
+
+The Exporter needs access to your Vultr API Key
+
+```bash
+export API_KEY="[YOUR-API-KEY]"
+```
 
 ## Go
 
