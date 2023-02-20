@@ -24,7 +24,7 @@ RUN env ${GOLANG_OPTIONS} \
     ./cmd/server
 
 
-FROM gcr.io/distroless/base-debian11
+FROM gcr.io/distroless/static
 
 LABEL org.opencontainers.image.source https://github.com/DazWilkin/vultr-exporter
 
