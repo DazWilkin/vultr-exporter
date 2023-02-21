@@ -1,5 +1,4 @@
-ARG GOLANG_VERSION=1.18
-ARG GOLANG_OPTIONS="CGO_ENABLED=0 GOOS=linux GOARCH=amd64"
+ARG GOLANG_VERSION=1.20
 
 FROM docker.io/golang:${GOLANG_VERSION} as build
 
@@ -16,7 +15,7 @@ RUN go mod download
 COPY cmd/server cmd/server
 COPY collector collector
 
-RUN env ${GOLANG_OPTIONS} \
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
     go build \
     -ldflags "-X main.OSVersion=${VERSION} -X main.GitCommit=${COMMIT}" \
     -a -installsuffix cgo \
