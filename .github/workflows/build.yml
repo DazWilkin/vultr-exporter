@@ -46,6 +46,7 @@ jobs:
       - name: Sign container image
         run: |
           cosign sign \
+          --yes \
           --key=./cosign.key \
           --annotations="repo=${{ github.repository }}" \
           --annotations="workflow=${{ github.workflow }}" \
