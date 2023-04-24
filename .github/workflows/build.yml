@@ -51,7 +51,7 @@ jobs:
           --annotations="workflow=${{ github.workflow }}" \
           --annotations="commit=${{ github.sha }}" \
           --annotations="version=${{ env.VERSION }}" \
-          ghcr.io/${{ env.REPO }}:${{ steps.docker-build-push.outputs.digest }}
+          ghcr.io/${{ env.REPO }}@${{ steps.docker-build-push.outputs.digest }}
         env:
           COSIGN_PASSWORD: ""          
       - name: Revise occurrences of the image
