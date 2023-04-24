@@ -25,6 +25,10 @@ jobs:
       - name: Get kernel version
         run: echo "VERSION=$(uname --kernel-release)" >> ${GITHUB_ENV}
       - name: Server
+        # id used here in order to provide the output (digest) from this step to cosign sign
+        # docker/build-push-action outputs are defined here:
+        # https://github.com/docker/build-push-action#outputs
+        id: docker-build-push
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -47,7 +51,7 @@ jobs:
           --annotations="workflow=${{ github.workflow }}" \
           --annotations="commit=${{ github.sha }}" \
           --annotations="version=${{ env.VERSION }}" \
-          ghcr.io/${{ env.REPO }}:${{ github.sha }}
+          ghcr.io/${{ env.REPO }}:${{ steps.docker-build-push.outputs.digest }}
         env:
           COSIGN_PASSWORD: ""          
       - name: Revise occurrences of the image
