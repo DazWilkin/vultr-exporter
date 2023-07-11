@@ -249,6 +249,14 @@ go install github.com/sigstore/cosign/cmd/cosign@latest
 + [pkg.go.dev: Cluster](https://pkg.go.dev/github.com/vultr/govultr/v2#Cluster)
 + [pkg.go.dev: NodePool](https://pkg.go.dev/github.com/vultr/govultr/v2#NodePool)
 
+## Similar Exporters
+
++ [Prometheus Exporter for Azure](https://github.com/DazWilkin/azure-exporter)
++ [Prometheus Exporter for Fly.io](https://github.com/DazWilkin/fly-exporter)
++ [Prometheus Exporter for GCP](https://github.com/DazWilkin/gcp-exporter)
++ [Prometheus Exporter for Koyeb](https://github.com/DazWilkin/koyeb-exporter)
++ [Prometheus Exporter for Linode](https://github.com/DazWilkin/linode-exporter)
+
 <hr/>
 <br/>
 <a href="https://www.buymeacoffee.com/dazwilkin" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
