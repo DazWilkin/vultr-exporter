@@ -23,7 +23,7 @@ Metrics are all prefixed `vultr_`
 
 ## Image
 
-+ `ghcr.io/dazwilkin/vultr-exporter:8c81bc338bebc9aa4cc1206a28685d6178d3643e`
++ `ghcr.io/dazwilkin/vultr-exporter:77b85f57f65252156b4c7dd763298331c07feaa3`
 
 ## API Key
 
@@ -35,7 +35,7 @@ export API_KEY="[YOUR-API-KEY]"
 
 ## Image
 
-+ `ghcr.io/dazwilkin/vultr-exporter:8c81bc338bebc9aa4cc1206a28685d6178d3643e`
++ `ghcr.io/dazwilkin/vultr-exporter:77b85f57f65252156b4c7dd763298331c07feaa3`
 
 ## API Key
 
@@ -60,7 +60,7 @@ go run ./cmd/server \
 ```bash
 API_KEY="[YOUR-API-KEY]"
 
-IMAGE="ghcr.io/dazwilkin/vultr-exporter:8c81bc338bebc9aa4cc1206a28685d6178d3643e"
+IMAGE="ghcr.io/dazwilkin/vultr-exporter:77b85f57f65252156b4c7dd763298331c07feaa3"
 
 podman run \
 --interactive --tty --rm \
@@ -78,7 +78,7 @@ ${IMAGE} \
 ```bash
 API_KEY="[YOUR-API-KEY]"
 
-IMAGE="ghcr.io/dazwilkin/vultr-exporter:8c81bc338bebc9aa4cc1206a28685d6178d3643e"
+IMAGE="ghcr.io/dazwilkin/vultr-exporter:77b85f57f65252156b4c7dd763298331c07feaa3"
 
 NAMESPACE="exporter"
 
@@ -231,7 +231,7 @@ groups:
 ```bash
 cosign verify \
 --key=./cosign.pub \
-ghcr.io/dazwilkin/vultr-exporter:8c81bc338bebc9aa4cc1206a28685d6178d3643e
+ghcr.io/dazwilkin/vultr-exporter:77b85f57f65252156b4c7dd763298331c07feaa3
 ```
 
 > **NOTE** cosign.pub may be downloaded [here](/cosign.pub)
