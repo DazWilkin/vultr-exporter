@@ -10,6 +10,8 @@ Metrics are all prefixed `vultr_`
 
 |Name|Type|Description|
 |----|----|-----------|
+|`account_balance`|Gauge|Account Balance|
+|`account_pending_charges`|Gauge|Pending Charges|
 |`block_storage_up`|Counter|Number of Block Storage volumes|
 |`block_storage_size`|Gauge|Size (GB) of Block Storage volumes|
 |`exporter_build_info`|Counter|Build status (1=running)|
