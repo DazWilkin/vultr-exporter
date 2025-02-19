@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/vultr/govultr/v2"
+	"github.com/vultr/govultr/v3"
 )
 
 // BlockStorageCollector represents Block Storage
@@ -53,7 +53,7 @@ func (c *BlockStorageCollector) Collect(ch chan<- prometheus.Metric) {
 	log := c.Log.WithName("Collect")
 	ctx := context.Background()
 	options := &govultr.ListOptions{}
-	blocks, meta, err := c.Client.BlockStorage.List(ctx, options)
+	blocks, meta, _, err := c.Client.BlockStorage.List(ctx, options)
 	if err != nil {
 		log.Info("Unable to List")
 		return

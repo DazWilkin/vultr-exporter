@@ -7,7 +7,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/vultr/govultr/v2"
+	"github.com/vultr/govultr/v3"
 )
 
 // ReservedIPsCollector represents Reserved IPs
@@ -44,7 +44,7 @@ func (c *ReservedIPsCollector) Collect(ch chan<- prometheus.Metric) {
 	log := c.Log.WithName("Collect")
 	ctx := context.Background()
 	options := &govultr.ListOptions{}
-	ips, meta, err := c.Client.ReservedIP.List(ctx, options)
+	ips, meta, _, err := c.Client.ReservedIP.List(ctx, options)
 	if err != nil {
 		log.Info("Unable to List")
 		return

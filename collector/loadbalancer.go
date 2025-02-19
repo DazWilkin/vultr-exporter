@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/vultr/govultr/v2"
+	"github.com/vultr/govultr/v3"
 )
 
 // LoadBalancerCollector represents Load Balancers
@@ -53,7 +53,7 @@ func (c *LoadBalancerCollector) Collect(ch chan<- prometheus.Metric) {
 	log := c.Log.WithName("Collect")
 	ctx := context.Background()
 	options := &govultr.ListOptions{}
-	loadbalancers, meta, err := c.Client.LoadBalancer.List(ctx, options)
+	loadbalancers, meta, _, err := c.Client.LoadBalancer.List(ctx, options)
 	if err != nil {
 		log.Info("Unable to list LoadBalancers")
 		return
@@ -88,7 +88,7 @@ func (c *LoadBalancerCollector) Collect(ch chan<- prometheus.Metric) {
 			)
 			ch <- prometheus.MustNewConstMetric(
 				c.Instances,
-				prometheus.CounterValue,
+				prometheus.GaugeValue,
 				float64(len(lb.Instances)),
 				[]string{
 					lb.Label,

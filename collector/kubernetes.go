@@ -7,7 +7,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/vultr/govultr/v2"
+	"github.com/vultr/govultr/v3"
 )
 
 // KubernetesCollector represents Kubernetes Engine
@@ -68,7 +68,7 @@ func (c *KubernetesCollector) Collect(ch chan<- prometheus.Metric) {
 	log := c.Log.WithName("Collect")
 	ctx := context.Background()
 	options := &govultr.ListOptions{}
-	clusters, meta, err := c.Client.Kubernetes.ListClusters(ctx, options)
+	clusters, meta, _, err := c.Client.Kubernetes.ListClusters(ctx, options)
 	if err != nil {
 		log.Info("Unable to ListClusters")
 		return
