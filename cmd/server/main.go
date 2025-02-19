@@ -14,7 +14,7 @@ import (
 
 	"github.com/DazWilkin/vultr-exporter/collector"
 	"github.com/go-logr/stdr"
-	"github.com/vultr/govultr/v2"
+	"github.com/vultr/govultr/v3"
 	"golang.org/x/oauth2"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -76,7 +76,9 @@ type Content struct {
 
 func handleHealthz(w http.ResponseWriter, _ *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("ok"))
+	if _, err := w.Write([]byte("ok")); err != nil {
+		log.Fatal("unable to write response")
+	}
 }
 func handleRoot(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=UTF-8")
@@ -143,6 +145,7 @@ func main() {
 	}
 	registry.MustRegister(collector.NewExporterCollector(s, b, log))
 	registry.MustRegister(collector.NewAccountCollector(s, client, log))
+	registry.MustRegister(collector.NewBillingCollector(s, client, log))
 	registry.MustRegister(collector.NewBlockStorageCollector(s, client, log))
 	registry.MustRegister(collector.NewKubernetesCollector(s, client, log))
 	registry.MustRegister(collector.NewLoadBalancerCollector(s, client, log))

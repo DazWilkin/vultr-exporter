@@ -11,7 +11,9 @@ Metrics are all prefixed `vultr_`
 |Name|Type|Description|
 |----|----|-----------|
 |`account_balance`|Gauge|Account Balance|
+|`account_bandwidth_*`||See [Account Bandwidth](#account-bandwidth) table below|
 |`account_pending_charges`|Gauge|Pending Charges|
+|`billing_*`||See [Billing](#billing) table below|
 |`block_storage_up`|Counter|Number of Block Storage volumes|
 |`block_storage_size`|Gauge|Size (GB) of Block Storage volumes|
 |`exporter_build_info`|Counter|Build status (1=running)|
@@ -19,9 +21,50 @@ Metrics are all prefixed `vultr_`
 |`kubernetes_cluster_up`|Counter|Number of Kubernetes clusters|
 |`kubernetes_node_pool`|Gauge|Number of Kubernetes cluster Node Pools|
 |`kubernetes_node`|Gauge|Number of Kubernetes Cluster Nodes|
-|`load_balancer_up`|Number of Load Balancers|
-|`load_balancer_instances`|Number of Load Balancer instances|
+|`load_balancer_up`|Counter|Number of Load Balancers|
+|`load_balancer_instances`|Gauge|Number of Load Balancer instances|
 |`reserved_ips_up`|Counter|Number of Reserved IPs|
+
+### Account Bandwidth
+
+Account Bandwidth (`vultr_account_bandwidth_` metrics are repeated for 3 time periods.
+
+These metrics include the period (`{period})` in their metric name e.g. `vultr_account_bandwidth_current_`:
+
+1. `current`
+1. `previous`
+1. `projected`
+
+And finally the specific metric name e.g. `vultr_account_bandwidth_current_free_bandwidth_credits`:
+
+|Name|Type|Description|
+|----|----|-----------|
+|`free_bandwidth_credits`|Gauge|Free Bandwidth Credits|
+|`gb_in`|Gauge|Ingress Bandwidth in GB|
+|`gb_out`|Gauge|Egress Bandwidth in GB|
+|`instance_bandwidth_credits`|Gauge|Instance Bandwidth Credits|
+|`overage`|Overage|
+|`overage_cost`|Overage Cost|
+|`overage_unit_cost`|Overage Unit Cost|
+|`purchased_bandwidth_credits`|Purchased Bandwidth Credits|
+|`total_instance_count`|Total Instance Count|
+|`total_instance_hours`|Total Instance Hours|
+
+None of thes metrics uses labels.
+
+### Billing
+
+Billing (`vultr_billing_`) metrics are repeated for each Vultr product (e.g. Load Balancer).
+
+These metrics include a canonicalized product name (e.g. `load_balancer_`) in their metric name e.g. `vultr_billing_load_balancer_totals`:
+
+|Name|Type|Description|
+|----|----|-----------|
+|`total`|Gauge|Total|
+|`unit_price`|Gauge|Unit Price|
+|`units`|Gauge|Units|
+
+`unit_price` and `units` metrics include `unit_type` label (e.g. `hours`).
 
 ## Image
 
