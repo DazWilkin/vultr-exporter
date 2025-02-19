@@ -10,13 +10,18 @@ import (
 	"github.com/vultr/govultr/v3"
 )
 
-// BillingCollector represents billing related metrics
+// BillingCollector represents billing related metrics.
+// It manages a set of InvoiceItemCollectors, one per product type,
+// and ensures that metrics are properly aggregated and deduplicated
+// before being emitted to Prometheus.
 type BillingCollector struct {
 	System System
 	Client *govultr.Client
 	Log    logr.Logger
 
 	// Map of product name to collector to prevent duplicates
+	// Each product type (e.g., "Cloud Compute", "Load Balancer") gets its own collector
+	// to ensure proper metric aggregation and avoid duplicates
 	collectors map[string]*InvoiceItemCollector
 }
 
@@ -46,20 +51,20 @@ func (c *BillingCollector) Collect(ch chan<- prometheus.Metric) {
 		"billing", invoiceItems,
 	)
 
-	// Group invoice items by product
+	// Group invoice items by product to ensure proper aggregation
 	itemsByProduct := make(map[string][]*govultr.InvoiceItem)
 	for _, item := range invoiceItems {
 		itemsByProduct[item.Product] = append(itemsByProduct[item.Product], &item)
 	}
 
-	// Clear old collectors that are no longer needed
+	// Clean up collectors for products that no longer exist
 	for product := range c.collectors {
 		if _, exists := itemsByProduct[product]; !exists {
 			delete(c.collectors, product)
 		}
 	}
 
-	// Create or update collectors and collect metrics
+	// Process each product's items through its dedicated collector
 	for product, items := range itemsByProduct {
 		collector, exists := c.collectors[product]
 		if !exists {
@@ -71,11 +76,11 @@ func (c *BillingCollector) Collect(ch chan<- prometheus.Metric) {
 			c.collectors[product] = collector
 		}
 
-		// First aggregate all items for this product
+		// First aggregate all items for this product to ensure accurate totals
 		for _, item := range items {
 			collector.Aggregate(item)
 		}
-		// Then emit the aggregated metrics
+		// Then emit the aggregated metrics once per product
 		collector.EmitMetrics(ch)
 	}
 }

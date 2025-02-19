@@ -8,7 +8,10 @@ import (
 	"github.com/vultr/govultr/v3"
 )
 
-// InvoiceItemCollector represents a single invoice item
+// InvoiceItemCollector represents a single invoice item type and handles metric aggregation.
+// It collects and aggregates metrics for a specific product type, ensuring that multiple
+// invoice items of the same type are properly combined before being emitted as Prometheus metrics.
+// This prevents duplicate metrics and ensures accurate totals.
 type InvoiceItemCollector struct {
 	System System
 	Client *govultr.Client
@@ -18,10 +21,11 @@ type InvoiceItemCollector struct {
 	UnitPrice *prometheus.Desc
 	Totals    *prometheus.Desc
 
-	// Store aggregated values
-	currentUnits     map[string]float64
-	currentUnitPrice map[string]float64
-	currentTotal     float64
+	// Store aggregated values for the current collection cycle
+	// These maps are cleared after metrics are emitted
+	currentUnits     map[string]float64 // Maps unit_type to total units
+	currentUnitPrice map[string]float64 // Maps unit_type to latest unit price
+	currentTotal     float64            // Running total for all items
 }
 
 // NewInvoiceItemCollector creates a new InvoiceItemCollector
