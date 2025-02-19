@@ -16,19 +16,17 @@ type BillingCollector struct {
 	Client *govultr.Client
 	Log    logr.Logger
 
-	InvoiceItemCollectors []*InvoiceItemCollector
+	// Map of product name to collector to prevent duplicates
+	collectors map[string]*InvoiceItemCollector
 }
 
 // NewBillingCollector creates a new BillingCollector
 func NewBillingCollector(s System, client *govultr.Client, log logr.Logger) *BillingCollector {
-	// subsystem := "billing"
 	return &BillingCollector{
-		System: s,
-		Client: client,
-		Log:    log,
-
-		// Unable to determine size of PendingCharges until we've fetched the data
-		InvoiceItemCollectors: []*InvoiceItemCollector{},
+		System:     s,
+		Client:     client,
+		Log:        log,
+		collectors: make(map[string]*InvoiceItemCollector),
 	}
 }
 
@@ -48,26 +46,43 @@ func (c *BillingCollector) Collect(ch chan<- prometheus.Metric) {
 		"billing", invoiceItems,
 	)
 
-	// Now that we have the data, we can create the metrics and collect them
-	// These results must replace any prior PendingCharges
-	c.InvoiceItemCollectors = make([]*InvoiceItemCollector, len(invoiceItems))
-	for i, invoiceItem := range invoiceItems {
-		// Create
-		// Must be added to this Collector's InvoiceItemCollectors slice
-		c.InvoiceItemCollectors[i] = NewInvoiceItemCollector(System{
-			Namespace: c.System.Namespace,
-			Subsystem: fmt.Sprintf("%s_%s", c.System.Subsystem, canonicalize(invoiceItem.Product)),
-			Version:   c.System.Version,
-		}, c.Client, log)
+	// Group invoice items by product
+	itemsByProduct := make(map[string][]*govultr.InvoiceItem)
+	for _, item := range invoiceItems {
+		itemsByProduct[item.Product] = append(itemsByProduct[item.Product], &item)
+	}
 
-		// Collect
-		c.InvoiceItemCollectors[i].Collect(ch, &invoiceItem)
+	// Clear old collectors that are no longer needed
+	for product := range c.collectors {
+		if _, exists := itemsByProduct[product]; !exists {
+			delete(c.collectors, product)
+		}
+	}
+
+	// Create or update collectors and collect metrics
+	for product, items := range itemsByProduct {
+		collector, exists := c.collectors[product]
+		if !exists {
+			collector = NewInvoiceItemCollector(System{
+				Namespace: c.System.Namespace,
+				Subsystem: fmt.Sprintf("%s_%s", c.System.Subsystem, canonicalize(product)),
+				Version:   c.System.Version,
+			}, c.Client, log)
+			c.collectors[product] = collector
+		}
+
+		// First aggregate all items for this product
+		for _, item := range items {
+			collector.Aggregate(item)
+		}
+		// Then emit the aggregated metrics
+		collector.EmitMetrics(ch)
 	}
 }
 
 // Describe implements Prometheus' Collector interface and is used to describe metrics
 func (c *BillingCollector) Describe(ch chan<- *prometheus.Desc) {
-	for _, invoiceItem := range c.InvoiceItemCollectors {
-		invoiceItem.Describe(ch)
+	for _, collector := range c.collectors {
+		collector.Describe(ch)
 	}
 }

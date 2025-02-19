@@ -150,7 +150,6 @@ func main() {
 	registry.MustRegister(collector.NewKubernetesCollector(s, client, log))
 	registry.MustRegister(collector.NewLoadBalancerCollector(s, client, log))
 	registry.MustRegister(collector.NewReservedIPsCollector(s, client, log))
-	registry.MustRegister(collector.NewBillingCollector(s, client, log))
 
 	mux := http.NewServeMux()
 	mux.Handle("/", http.HandlerFunc(handleRoot))
