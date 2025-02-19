@@ -69,15 +69,12 @@ var (
 	// Either the Collector is changed (e.g. labels added|removed)
 	// Or the responsePendingCharges changes
 	prometheusPendingCharges string = `
-	# HELP vultr_billing_total Total
-	# TYPE vultr_billing_total gauge
-	vultr_billing_total{product="Load Balancer",description="Load Balancer (my-loadbalancer)"} 10
-	# HELP vultr_billing_unit_price Unit Price
-	# TYPE vultr_billing_unit_price gauge
-	vultr_billing_unit_price{product="Load Balancer",description="Load Balancer (my-loadbalancer)",unit_type="hours"} 0.01489999983459711
-	# HELP vultr_billing_units Units
-	# TYPE vultr_billing_units gauge
-	vultr_billing_units{product="Load Balancer",description="Load Balancer (my-loadbalancer)",unit_type="hours"} 720
+	# HELP test_billing_total Total cost
+	# TYPE test_billing_total gauge
+	test_billing_total{description="Load Balancer (my-loadbalancer)",product="Load Balancer"} 10
+	# HELP test_billing_units Number of units consumed
+	# TYPE test_billing_units gauge
+	test_billing_units{description="Load Balancer (my-loadbalancer)",product="Load Balancer",unit_price="0.014900",unit_type="hours"} 720
 	`
 )
 
