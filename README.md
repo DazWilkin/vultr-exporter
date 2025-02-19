@@ -8,63 +8,88 @@
 
 Metrics are all prefixed `vultr_`
 
-|Name|Type|Description|
-|----|----|-----------|
-|`account_balance`|Gauge|Account Balance|
-|`account_bandwidth_*`||See [Account Bandwidth](#account-bandwidth) table below|
-|`account_pending_charges`|Gauge|Pending Charges|
-|`billing_*`||See [Billing](#billing) table below|
-|`block_storage_up`|Counter|Number of Block Storage volumes|
-|`block_storage_size`|Gauge|Size (GB) of Block Storage volumes|
-|`exporter_build_info`|Counter|Build status (1=running)|
-|`exporter_start_time`|Gauge|Start time (Unix epoch) of Exporter|
-|`kubernetes_cluster_up`|Counter|Number of Kubernetes clusters|
-|`kubernetes_node_pool`|Gauge|Number of Kubernetes cluster Node Pools|
-|`kubernetes_node`|Gauge|Number of Kubernetes Cluster Nodes|
-|`load_balancer_up`|Counter|Number of Load Balancers|
-|`load_balancer_instances`|Gauge|Number of Load Balancer instances|
-|`reserved_ips_up`|Counter|Number of Reserved IPs|
+| Name                      | Type    | Description                                                           |
+| ------------------------- | ------- | --------------------------------------------------------------------- |
+| `account_balance`         | Gauge   | Account Balance                                                       |
+| `account_bandwidth_value` | Gauge   | Account bandwidth metrics with period, metric type and unit as labels |
+| `account_pending_charges` | Gauge   | Pending Charges                                                       |
+| `billing_total`           | Gauge   | Total cost per product instance                                       |
+| `billing_units`           | Gauge   | Number of units consumed per product instance                         |
+| `block_storage_up`        | Counter | Number of Block Storage volumes                                       |
+| `block_storage_size`      | Gauge   | Size (GB) of Block Storage volumes                                    |
+| `exporter_build_info`     | Counter | Build status (1=running)                                              |
+| `exporter_start_time`     | Gauge   | Start time (Unix epoch) of Exporter                                   |
+| `kubernetes_cluster_up`   | Counter | Number of Kubernetes clusters                                         |
+| `kubernetes_node_pool`    | Gauge   | Number of Kubernetes cluster Node Pools                               |
+| `kubernetes_node`         | Gauge   | Number of Kubernetes Cluster Nodes                                    |
+| `load_balancer_up`        | Counter | Number of Load Balancers                                              |
+| `load_balancer_instances` | Gauge   | Number of Load Balancer instances                                     |
+| `reserved_ips_up`         | Counter | Number of Reserved IPs                                                |
 
 ### Account Bandwidth
 
-Account Bandwidth (`vultr_account_bandwidth_` metrics are repeated for 3 time periods.
+Account Bandwidth metrics use a single metric `vultr_account_bandwidth_value` with labels to distinguish different types of measurements:
 
-These metrics include the period (`{period})` in their metric name e.g. `vultr_account_bandwidth_current_`:
-
-1. `current`
-1. `previous`
-1. `projected`
-
-And finally the specific metric name e.g. `vultr_account_bandwidth_current_free_bandwidth_credits`:
-
-|Name|Type|Description|
-|----|----|-----------|
-|`free_bandwidth_credits`|Gauge|Free Bandwidth Credits|
-|`gb_in`|Gauge|Ingress Bandwidth in GB|
-|`gb_out`|Gauge|Egress Bandwidth in GB|
-|`instance_bandwidth_credits`|Gauge|Instance Bandwidth Credits|
-|`overage`|Overage|
-|`overage_cost`|Overage Cost|
-|`overage_unit_cost`|Overage Unit Cost|
-|`purchased_bandwidth_credits`|Purchased Bandwidth Credits|
-|`total_instance_count`|Total Instance Count|
-|`total_instance_hours`|Total Instance Hours|
-
-None of thes metrics uses labels.
+- `period`: Time period of the measurement
+  - `current`: Current month to date
+  - `previous`: Previous month
+  - `projected`: Projected for current month
+- `metric`: Type of measurement
+  - `gb_in`: Ingress Bandwidth
+  - `gb_out`: Egress Bandwidth
+  - `total_instance_hours`: Total Instance Hours
+  - `total_instance_count`: Total Instance Count
+  - `instance_bandwidth_credits`: Instance Bandwidth Credits
+  - `free_bandwidth_credits`: Free Bandwidth Credits
+  - `purchased_bandwidth_credits`: Purchased Bandwidth Credits
+  - `overage`: Bandwidth Overage
+  - `overage_unit_cost`: Overage Unit Cost
+  - `overage_cost`: Overage Cost
+- `unit`: Unit of measurement (GB, hours, count, credits, USD)
 
 ### Billing
 
-Billing (`vultr_billing_`) metrics are repeated for each Vultr product (e.g. Load Balancer).
+Billing metrics provide cost and usage information for each Vultr product instance:
 
-These metrics include a canonicalized product name (e.g. `load_balancer_`) in their metric name e.g. `vultr_billing_load_balancer_totals`:
+| Name            | Type  | Labels                                      | Description                                     |
+| --------------- | ----- | ------------------------------------------- | ----------------------------------------------- |
+| `billing_total` | Gauge | product, description                        | Total cost for a product instance               |
+| `billing_units` | Gauge | product, description, unit_type, unit_price | Number of units consumed with price information |
 
-|Name|Type|Description|
-|----|----|-----------|
-|`total`|Gauge|Total|
-|`unit_price`|Gauge|Unit Price|
-|`units`|Gauge|Units|
+The `product` and `description` labels uniquely identify each resource (e.g., specific Load Balancer, Instance, etc.).
 
-`unit_price` and `units` metrics include `unit_type` label (e.g. `hours`).
+### Prometheus Query Examples
+
+Here are some useful PromQL queries:
+
+```promql
+# Total cost across all products
+sum(vultr_billing_total)
+
+# Cost by product type
+sum(vultr_billing_total) by (product)
+
+# Find most expensive resources
+topk(5, vultr_billing_total)
+
+# Total bandwidth usage current month
+sum(vultr_account_bandwidth_value{period="current",metric=~"gb_.*"})
+
+# Current month bandwidth by direction
+sum(vultr_account_bandwidth_value{period="current"}) by (metric) 
+
+# Resources with high unit prices
+topk(5, vultr_billing_units * on(unit_price) scalar(vultr_billing_units{unit_price!="0"}))
+
+# Projected vs current bandwidth usage
+sum(vultr_account_bandwidth_value{metric=~"gb_.*"}) by (period)
+
+# Total instance hours by period
+vultr_account_bandwidth_value{metric="total_instance_hours"}
+
+# Bandwidth overage cost projection
+vultr_account_bandwidth_value{period="projected",metric="overage_cost"}
+```
 
 ## Image
 
