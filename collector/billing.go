@@ -11,7 +11,7 @@ import (
 )
 
 // BillingCollector represents billing related metrics.
-// It manages a set of InvoiceItemCollectors, one per product type,
+// It manages a set of InvoiceItemCollectors, one per product type and description,
 // and ensures that metrics are properly aggregated and deduplicated
 // before being emitted to Prometheus.
 type BillingCollector struct {
@@ -19,8 +19,8 @@ type BillingCollector struct {
 	Client *govultr.Client
 	Log    logr.Logger
 
-	// Map of product name to collector to prevent duplicates
-	// Each product type (e.g., "Cloud Compute", "Load Balancer") gets its own collector
+	// Map of product+description to collector to prevent duplicates
+	// Each unique product instance (e.g., different Load Balancers) gets its own collector
 	// to ensure proper metric aggregation and avoid duplicates
 	collectors map[string]*InvoiceItemCollector
 }
@@ -35,41 +35,75 @@ func NewBillingCollector(s System, client *govultr.Client, log logr.Logger) *Bil
 	}
 }
 
+// getCollectorKey generates a unique key for a collector based on product and description
+func getCollectorKey(product, description string) string {
+	return fmt.Sprintf("%s::%s", product, description)
+}
+
+// getAllPendingCharges retrieves all pending charges across all pages
+func (c *BillingCollector) getAllPendingCharges(ctx context.Context) ([]govultr.InvoiceItem, error) {
+	var allItems []govultr.InvoiceItem
+	options := &govultr.ListOptions{
+		PerPage: 100,
+	}
+
+	for {
+		items, _, err := c.Client.Billing.ListPendingCharges(ctx, options)
+		if err != nil {
+			return nil, err
+		}
+
+		allItems = append(allItems, items...)
+
+		// If we got less items than requested, we've reached the end
+		if len(items) < options.PerPage {
+			break
+		}
+
+		// Move to next page
+		options.Cursor = fmt.Sprintf("%d", len(allItems))
+	}
+
+	return allItems, nil
+}
+
 // Collect implements Prometheus' Collector interface and is used to collect metrics
 func (c *BillingCollector) Collect(ch chan<- prometheus.Metric) {
-	log := c.Log.WithName("Collect")
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second) // Increased timeout for pagination
 	defer cancel()
 
-	invoiceItems, _, err := c.Client.Billing.ListPendingCharges(ctx, &govultr.ListOptions{})
+	// Get all pending charges across all pages
+	invoiceItems, err := c.getAllPendingCharges(ctx)
 	if err != nil {
-		log.Info("Unable to get account details", "error", err)
+		c.Log.Error(err, "Unable to get account details")
 		return
 	}
 
-	// Group invoice items by product to ensure proper aggregation
-	itemsByProduct := make(map[string][]*govultr.InvoiceItem)
-	for _, item := range invoiceItems {
-		itemsByProduct[item.Product] = append(itemsByProduct[item.Product], &item)
+	// Group invoice items by product+description to ensure proper aggregation
+	itemsByKey := make(map[string][]*govultr.InvoiceItem)
+	for i := range invoiceItems {
+		item := &invoiceItems[i] // Get pointer to item in slice to avoid copying
+		key := getCollectorKey(item.Product, item.Description)
+		itemsByKey[key] = append(itemsByKey[key], item)
 	}
 
 	// Clean up collectors for products that no longer exist
-	for product := range c.collectors {
-		if _, exists := itemsByProduct[product]; !exists {
-			delete(c.collectors, product)
+	for key := range c.collectors {
+		if _, exists := itemsByKey[key]; !exists {
+			delete(c.collectors, key)
 		}
 	}
 
 	// Process each product's items through its dedicated collector
-	for product, items := range itemsByProduct {
-		collector, exists := c.collectors[product]
+	for key, items := range itemsByKey {
+		collector, exists := c.collectors[key]
 		if !exists {
 			collector = NewInvoiceItemCollector(System{
 				Namespace: c.System.Namespace,
-				Subsystem: fmt.Sprintf("billing_%s", canonicalize(product)),
+				Subsystem: "billing",
 				Version:   c.System.Version,
-			}, c.Client, log)
-			c.collectors[product] = collector
+			}, c.Client, c.Log)
+			c.collectors[key] = collector
 		}
 
 		// First aggregate all items for this product to ensure accurate totals
@@ -79,15 +113,6 @@ func (c *BillingCollector) Collect(ch chan<- prometheus.Metric) {
 		// Then emit the aggregated metrics once per product
 		collector.EmitMetrics(ch)
 	}
-}
-
-// getKeys returns a slice of map keys for logging
-func getKeys(m map[string][]*govultr.InvoiceItem) []string {
-	keys := make([]string, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-	return keys
 }
 
 // Describe implements Prometheus' Collector interface and is used to describe metrics

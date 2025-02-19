@@ -1,6 +1,7 @@
 package collector
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/go-logr/logr"
@@ -17,15 +18,21 @@ type InvoiceItemCollector struct {
 	Client *govultr.Client
 	Log    logr.Logger
 
-	Units     *prometheus.Desc
-	UnitPrice *prometheus.Desc
-	Totals    *prometheus.Desc
+	// Single metric for units that includes unit price as a label
+	// This allows for direct calculation of costs using the unit price label
+	// and follows Prometheus best practice of having raw values in metrics
+	Units *prometheus.Desc
+
+	// Total cost metric
+	Total *prometheus.Desc
 
 	// Store aggregated values for the current collection cycle
 	// These maps are cleared after metrics are emitted
 	currentUnits     map[string]float64 // Maps unit_type to total units
 	currentUnitPrice map[string]float64 // Maps unit_type to latest unit price
 	currentTotal     float64            // Running total for all items
+	description      string             // Description of the item
+	product          string             // Product type
 }
 
 // NewInvoiceItemCollector creates a new InvoiceItemCollector
@@ -38,25 +45,23 @@ func NewInvoiceItemCollector(s System, client *govultr.Client, log logr.Logger) 
 		Log:    log,
 
 		Units: prometheus.NewDesc(
-			prometheus.BuildFQName(s.Namespace, s.Subsystem, "units"),
-			"Units",
+			prometheus.BuildFQName(s.Namespace, "billing", "units"),
+			"Number of units consumed",
 			[]string{
+				"product",
+				"description",
 				"unit_type",
+				"unit_price", // Added unit price as a label to allow for direct cost calculation
 			},
 			nil,
 		),
-		UnitPrice: prometheus.NewDesc(
-			prometheus.BuildFQName(s.Namespace, s.Subsystem, "unit_price"),
-			"Unit Price",
+		Total: prometheus.NewDesc(
+			prometheus.BuildFQName(s.Namespace, "billing", "total"),
+			"Total cost",
 			[]string{
-				"unit_type",
+				"product",
+				"description",
 			},
-			nil,
-		),
-		Totals: prometheus.NewDesc(
-			prometheus.BuildFQName(s.Namespace, s.Subsystem, "total"),
-			"Total",
-			[]string{},
 			nil,
 		),
 
@@ -72,6 +77,10 @@ func (c *InvoiceItemCollector) Aggregate(invoiceItem *govultr.InvoiceItem) {
 		c.currentTotal = 0
 	}
 
+	// Store product info
+	c.product = invoiceItem.Product
+	c.description = invoiceItem.Description
+
 	// Aggregate values
 	c.currentUnits[invoiceItem.UnitType] += float64(invoiceItem.Units)
 	c.currentUnitPrice[invoiceItem.UnitType] = float64(invoiceItem.UnitPrice) // Use latest price
@@ -86,27 +95,28 @@ func (c *InvoiceItemCollector) EmitMetrics(ch chan<- prometheus.Metric) {
 			c.Units,
 			prometheus.GaugeValue,
 			units,
-			[]string{unitType}...,
-		)
-		ch <- prometheus.MustNewConstMetric(
-			c.UnitPrice,
-			prometheus.GaugeValue,
-			c.currentUnitPrice[unitType],
-			[]string{unitType}...,
+			[]string{
+				c.product,
+				c.description,
+				unitType,
+				fmt.Sprintf("%.6f", c.currentUnitPrice[unitType]), // Format unit price with sufficient precision
+			}...,
 		)
 	}
 
 	ch <- prometheus.MustNewConstMetric(
-		c.Totals,
+		c.Total,
 		prometheus.GaugeValue,
 		c.currentTotal,
-		[]string{}...,
+		[]string{c.product, c.description}...,
 	)
 
 	// Reset the aggregated values
 	c.currentUnits = make(map[string]float64)
 	c.currentUnitPrice = make(map[string]float64)
 	c.currentTotal = 0
+	c.product = ""
+	c.description = ""
 }
 
 // Collect collects metrics
@@ -117,8 +127,7 @@ func (c *InvoiceItemCollector) Collect(ch chan<- prometheus.Metric, invoiceItem 
 // Describe describes metrics
 func (c *InvoiceItemCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.Units
-	ch <- c.UnitPrice
-	ch <- c.Totals
+	ch <- c.Total
 }
 
 // canonicalize converts a string to lowercase and replaces spaces with underscores
