@@ -43,13 +43,9 @@ func (c *BillingCollector) Collect(ch chan<- prometheus.Metric) {
 
 	invoiceItems, _, err := c.Client.Billing.ListPendingCharges(ctx, &govultr.ListOptions{})
 	if err != nil {
-		log.Info("Unable to get account details")
+		log.Info("Unable to get account details", "error", err)
 		return
 	}
-
-	log.Info("Response",
-		"billing", invoiceItems,
-	)
 
 	// Group invoice items by product to ensure proper aggregation
 	itemsByProduct := make(map[string][]*govultr.InvoiceItem)
@@ -70,7 +66,7 @@ func (c *BillingCollector) Collect(ch chan<- prometheus.Metric) {
 		if !exists {
 			collector = NewInvoiceItemCollector(System{
 				Namespace: c.System.Namespace,
-				Subsystem: fmt.Sprintf("%s_%s", c.System.Subsystem, canonicalize(product)),
+				Subsystem: fmt.Sprintf("billing_%s", canonicalize(product)),
 				Version:   c.System.Version,
 			}, c.Client, log)
 			c.collectors[product] = collector
@@ -83,6 +79,15 @@ func (c *BillingCollector) Collect(ch chan<- prometheus.Metric) {
 		// Then emit the aggregated metrics once per product
 		collector.EmitMetrics(ch)
 	}
+}
+
+// getKeys returns a slice of map keys for logging
+func getKeys(m map[string][]*govultr.InvoiceItem) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
 }
 
 // Describe implements Prometheus' Collector interface and is used to describe metrics
