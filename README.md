@@ -271,7 +271,7 @@ groups:
 
 ## Sigstore
 
-`vultr-exporter` container images are being signed by Sigstore and may be verified:
+`vultr-exporter` container images are being signed by [Sigstore](https://www.sigstore.dev/) and may be verified:
 
 ```bash
 cosign verify \
