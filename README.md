@@ -68,7 +68,7 @@ These metrics include a canonicalized product name (e.g. `load_balancer_`) in th
 
 ## Image
 
-+ `ghcr.io/dazwilkin/vultr-exporter:5b8b1ea41ad2e5bec55132498ff5e6d7afd809f3`
++ `ghcr.io/dazwilkin/vultr-exporter:70b533af6070d027424a3cb9eadc9d749d2e8d28`
 
 ## API Key
 
@@ -80,7 +80,7 @@ export API_KEY="[YOUR-API-KEY]"
 
 ## Image
 
-+ `ghcr.io/dazwilkin/vultr-exporter:5b8b1ea41ad2e5bec55132498ff5e6d7afd809f3`
++ `ghcr.io/dazwilkin/vultr-exporter:70b533af6070d027424a3cb9eadc9d749d2e8d28`
 
 ## API Key
 
@@ -105,7 +105,7 @@ go run ./cmd/server \
 ```bash
 API_KEY="[YOUR-API-KEY]"
 
-IMAGE="ghcr.io/dazwilkin/vultr-exporter:5b8b1ea41ad2e5bec55132498ff5e6d7afd809f3"
+IMAGE="ghcr.io/dazwilkin/vultr-exporter:70b533af6070d027424a3cb9eadc9d749d2e8d28"
 
 podman run \
 --interactive --tty --rm \
@@ -123,7 +123,7 @@ ${IMAGE} \
 ```bash
 API_KEY="[YOUR-API-KEY]"
 
-IMAGE="ghcr.io/dazwilkin/vultr-exporter:5b8b1ea41ad2e5bec55132498ff5e6d7afd809f3"
+IMAGE="ghcr.io/dazwilkin/vultr-exporter:70b533af6070d027424a3cb9eadc9d749d2e8d28"
 
 NAMESPACE="exporter"
 
@@ -276,7 +276,7 @@ groups:
 ```bash
 cosign verify \
 --key=./cosign.pub \
-ghcr.io/dazwilkin/vultr-exporter:5b8b1ea41ad2e5bec55132498ff5e6d7afd809f3
+ghcr.io/dazwilkin/vultr-exporter:70b533af6070d027424a3cb9eadc9d749d2e8d28
 ```
 
 > **NOTE** cosign.pub may be downloaded [here](/cosign.pub)
