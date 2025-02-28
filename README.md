@@ -93,7 +93,7 @@ vultr_account_bandwidth_value{period="projected",metric="overage_cost"}
 
 ## Image
 
-+ `ghcr.io/dazwilkin/vultr-exporter:dfe4bed4539856d810239ff1628fcd27e0b5e46a`
++ `ghcr.io/dazwilkin/vultr-exporter:5b8b1ea41ad2e5bec55132498ff5e6d7afd809f3`
 
 ## API Key
 
@@ -105,7 +105,7 @@ export API_KEY="[YOUR-API-KEY]"
 
 ## Image
 
-+ `ghcr.io/dazwilkin/vultr-exporter:dfe4bed4539856d810239ff1628fcd27e0b5e46a`
++ `ghcr.io/dazwilkin/vultr-exporter:5b8b1ea41ad2e5bec55132498ff5e6d7afd809f3`
 
 ## API Key
 
@@ -130,7 +130,7 @@ go run ./cmd/server \
 ```bash
 API_KEY="[YOUR-API-KEY]"
 
-IMAGE="ghcr.io/dazwilkin/vultr-exporter:dfe4bed4539856d810239ff1628fcd27e0b5e46a"
+IMAGE="ghcr.io/dazwilkin/vultr-exporter:5b8b1ea41ad2e5bec55132498ff5e6d7afd809f3"
 
 podman run \
 --interactive --tty --rm \
@@ -148,7 +148,7 @@ ${IMAGE} \
 ```bash
 API_KEY="[YOUR-API-KEY]"
 
-IMAGE="ghcr.io/dazwilkin/vultr-exporter:dfe4bed4539856d810239ff1628fcd27e0b5e46a"
+IMAGE="ghcr.io/dazwilkin/vultr-exporter:5b8b1ea41ad2e5bec55132498ff5e6d7afd809f3"
 
 NAMESPACE="exporter"
 
@@ -296,12 +296,12 @@ groups:
 
 ## Sigstore
 
-`vultr-exporter` container images are being signed by Sigstore and may be verified:
+`vultr-exporter` container images are being signed by [Sigstore](https://www.sigstore.dev/) and may be verified:
 
 ```bash
 cosign verify \
 --key=./cosign.pub \
-ghcr.io/dazwilkin/vultr-exporter:dfe4bed4539856d810239ff1628fcd27e0b5e46a
+ghcr.io/dazwilkin/vultr-exporter:5b8b1ea41ad2e5bec55132498ff5e6d7afd809f3
 ```
 
 > **NOTE** cosign.pub may be downloaded [here](/cosign.pub)
@@ -322,10 +322,15 @@ go install github.com/sigstore/cosign/cmd/cosign@latest
 ## Similar Exporters
 
 + [Prometheus Exporter for Azure](https://github.com/DazWilkin/azure-exporter)
++ [Prometheus Exporter for crt.sh](https://github.com/DazWilkin/crtsh-exporter)
 + [Prometheus Exporter for Fly.io](https://github.com/DazWilkin/fly-exporter)
-+ [Prometheus Exporter for GCP](https://github.com/DazWilkin/gcp-exporter)
++ [Prometheus Exporter for GoatCounter](https://github.com/DazWilkin/goatcounter-exporter)
++ [Prometheus Exporter for Google Cloud](https://github.com/DazWilkin/gcp-exporter)
 + [Prometheus Exporter for Koyeb](https://github.com/DazWilkin/koyeb-exporter)
 + [Prometheus Exporter for Linode](https://github.com/DazWilkin/linode-exporter)
++ [Prometheus Exporter for PorkBun](https://github.com/DazWilkin/porkbun-exporter)
++ [Prometheus Exporter for updown.io](https://github.com/DazWilkin/updown-exporter)
++ [Prometheus Exporter for Vultr](https://github.com/DazWilkin/vultr-exporter)
 
 <hr/>
 <br/>
