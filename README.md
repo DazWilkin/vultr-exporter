@@ -13,7 +13,7 @@ Metrics are all prefixed `vultr_`
 | `account_balance`         | Gauge   | Account Balance                                                       |
 | `account_bandwidth_value` | Gauge   | Account bandwidth metrics with period, metric type and unit as labels |
 | `account_pending_charges` | Gauge   | Pending Charges                                                       |
-| `billing_total`           | Gauge   | Total cost per product instance                                       |
+| `billing_cost_usd`        | Gauge   | Total cost in USD per product instance                                |
 | `billing_units`           | Gauge   | Number of units consumed per product instance                         |
 | `block_storage_up`        | Counter | Number of Block Storage volumes                                       |
 | `block_storage_size`      | Gauge   | Size (GB) of Block Storage volumes                                    |
@@ -21,7 +21,7 @@ Metrics are all prefixed `vultr_`
 | `exporter_start_time`     | Gauge   | Start time (Unix epoch) of Exporter                                   |
 | `kubernetes_cluster_up`   | Counter | Number of Kubernetes clusters                                         |
 | `kubernetes_node_pool`    | Gauge   | Number of Kubernetes cluster Node Pools                               |
-| `kubernetes_node`         | Gauge   | Number of Kubernetes Cluster Nodes                                    |
+| `kubernetes_node_pool_nodes` | Gauge | Number of Kubernetes Cluster Nodes                                   |
 | `load_balancer_up`        | Counter | Number of Load Balancers                                              |
 | `load_balancer_instances` | Gauge   | Number of Load Balancer instances                                     |
 | `reserved_ips_up`         | Counter | Number of Reserved IPs                                                |
@@ -51,12 +51,21 @@ Account Bandwidth metrics use a single metric `vultr_account_bandwidth_value` wi
 
 Billing metrics provide cost and usage information for each Vultr product instance:
 
-| Name            | Type  | Labels                                      | Description                                     |
-| --------------- | ----- | ------------------------------------------- | ----------------------------------------------- |
-| `billing_total` | Gauge | product, description                        | Total cost for a product instance               |
-| `billing_units` | Gauge | product, description, unit_type, unit_price | Number of units consumed with price information |
+| Name               | Type  | Labels                                      | Description                                     |
+| ------------------ | ----- | ------------------------------------------- | ----------------------------------------------- |
+| `billing_cost_usd` | Gauge | product, description                        | Total cost in USD for a product instance        |
+| `billing_units`    | Gauge | product, description, unit_type, unit_price | Number of units consumed with price information |
 
 The `product` and `description` labels uniquely identify each resource (e.g., specific Load Balancer, Instance, etc.).
+
+### Block Storage
+
+Block Storage metrics include the following labels:
+- `id`: Block Storage ID
+- `label`: Block Storage label
+- `region`: Region where the Block Storage is located
+- `status`: Current status of the Block Storage
+- `block_type`: Type of Block Storage
 
 ### Prometheus Query Examples
 
@@ -64,13 +73,13 @@ Here are some useful PromQL queries:
 
 ```promql
 # Total cost across all products
-sum(vultr_billing_total)
+sum(vultr_billing_cost_usd)
 
 # Cost by product type
-sum(vultr_billing_total) by (product)
+sum(vultr_billing_cost_usd) by (product)
 
 # Find most expensive resources
-topk(5, vultr_billing_total)
+topk(5, vultr_billing_cost_usd)
 
 # Total bandwidth usage current month
 sum(vultr_account_bandwidth_value{period="current",metric=~"gb_.*"})
@@ -89,6 +98,12 @@ vultr_account_bandwidth_value{metric="total_instance_hours"}
 
 # Bandwidth overage cost projection
 vultr_account_bandwidth_value{period="projected",metric="overage_cost"}
+
+# Count of nodes by Kubernetes cluster
+sum(vultr_kubernetes_node_pool_nodes) by (label)
+
+# Block storage by type
+sum(vultr_block_storage_size) by (block_type)
 ```
 
 ## Image
@@ -236,8 +251,6 @@ spec:
       targetPort: 8080
 " | kubectl apply --filename=- --namespace=${NAMESPACE}
 ```
-
-
 
 ## Raspberry Pi 4
 

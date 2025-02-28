@@ -69,9 +69,9 @@ var (
 	// Either the Collector is changed (e.g. labels added|removed)
 	// Or the responsePendingCharges changes
 	prometheusPendingCharges string = `
-	# HELP test_billing_total Total cost
-	# TYPE test_billing_total gauge
-	test_billing_total{description="Load Balancer (my-loadbalancer)",product="Load Balancer"} 10
+	# HELP test_billing_cost_usd Total cost in USD
+	# TYPE test_billing_cost_usd gauge
+	test_billing_cost_usd{description="Load Balancer (my-loadbalancer)",product="Load Balancer"} 10
 	# HELP test_billing_units Number of units consumed
 	# TYPE test_billing_units gauge
 	test_billing_units{description="Load Balancer (my-loadbalancer)",product="Load Balancer",unit_price="0.014900",unit_type="hours"} 720

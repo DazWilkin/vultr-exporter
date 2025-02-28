@@ -56,8 +56,8 @@ func NewInvoiceItemCollector(s System, client *govultr.Client, log logr.Logger) 
 			nil,
 		),
 		Total: prometheus.NewDesc(
-			prometheus.BuildFQName(s.Namespace, "billing", "total"),
-			"Total cost",
+			prometheus.BuildFQName(s.Namespace, "billing", "cost_usd"),
+			"Total cost in USD",
 			[]string{
 				"product",
 				"description",

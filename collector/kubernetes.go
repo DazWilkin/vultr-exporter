@@ -50,7 +50,7 @@ func NewKubernetesCollector(s System, client *govultr.Client, log logr.Logger) *
 			nil,
 		),
 		Nodes: prometheus.NewDesc(
-			prometheus.BuildFQName(s.Namespace, subsystem, "node"),
+			prometheus.BuildFQName(s.Namespace, subsystem, "node_pool_nodes"),
 			"Number of Nodes",
 			[]string{
 				"label",
@@ -67,26 +67,37 @@ func NewKubernetesCollector(s System, client *govultr.Client, log logr.Logger) *
 func (c *KubernetesCollector) Collect(ch chan<- prometheus.Metric) {
 	log := c.Log.WithName("Collect")
 	ctx := context.Background()
-	options := &govultr.ListOptions{}
-	clusters, meta, _, err := c.Client.Kubernetes.ListClusters(ctx, options)
-	if err != nil {
-		log.Info("Unable to ListClusters")
-		return
+
+	// Get all Kubernetes clusters across all pages
+	var allClusters []govultr.Cluster
+	options := &govultr.ListOptions{
+		PerPage: 100,
 	}
 
-	log.Info("Response",
-		"meta", meta,
-	)
+	for {
+		clusters, meta, _, err := c.Client.Kubernetes.ListClusters(ctx, options)
+		if err != nil {
+			log.Error(err, "Unable to Kubernetes.ListClusters")
+			return
+		}
+
+		allClusters = append(allClusters, clusters...)
+
+		// If we've received all items or there's no next page, break
+		if meta != nil && meta.Links != nil && meta.Links.Next == "" {
+			break
+		}
+
+		// Move to next page
+		options.Cursor = meta.Links.Next
+	}
 
 	// Enumerate all of the clusters
 	var wg sync.WaitGroup
-	for _, cluster := range clusters {
+	for _, cluster := range allClusters {
 		wg.Add(1)
 		go func(cluster govultr.Cluster) {
 			defer wg.Done()
-			log.Info("Details",
-				"Cluster", cluster,
-			)
 
 			ch <- prometheus.MustNewConstMetric(
 				c.Up,
@@ -116,10 +127,6 @@ func (c *KubernetesCollector) Collect(ch chan<- prometheus.Metric) {
 				}...,
 			)
 			for _, nodepool := range cluster.NodePools {
-				log.Info("Debugging",
-					"NodeQuantity", nodepool.NodeQuantity,
-					"len(Nodes)", len(nodepool.Nodes),
-				)
 				ch <- prometheus.MustNewConstMetric(
 					c.Nodes,
 					prometheus.GaugeValue,
@@ -135,7 +142,6 @@ func (c *KubernetesCollector) Collect(ch chan<- prometheus.Metric) {
 		}(cluster)
 	}
 	wg.Wait()
-
 }
 
 // Describe implements Prometheus' Collector interface and is used to describe metrics
