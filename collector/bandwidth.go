@@ -2,7 +2,6 @@ package collector
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/go-logr/logr"
 	"github.com/prometheus/client_golang/prometheus"
@@ -14,45 +13,30 @@ var (
 )
 
 // BandwidthCollector represents Account Bandwidth
-// This comprises repeated (3) occurrences of BandwidthPeriod structs
 type BandwidthCollector struct {
 	System System
 	Client *govultr.Client
 	Log    logr.Logger
 
-	Previous  BandwidthPeriodCollector
-	Current   BandwidthPeriodCollector
-	Projected BandwidthPeriodCollector
+	// Single metric that captures all bandwidth-related values
+	// Using labels for period (current/previous/projected) and metric type (gb_in/gb_out/etc)
+	// This allows for easier querying and aggregation across periods and metric types
+	Value *prometheus.Desc
 }
 
 // NewBandwidthCollector creates a new BandwidthCollector
 func NewBandwidthCollector(s System, client *govultr.Client, log logr.Logger) BandwidthCollector {
-	// Ensure each bandwidth month's subsystem is unique
-	// The namespace and subsystem are used to create uniquely named metrics
-	previous := NewBandwidthPeriod(System{
-		Namespace: s.Namespace,
-		Subsystem: fmt.Sprintf("%s_previous", s.Subsystem),
-		Version:   s.Version,
-	}, client, log)
-	current := NewBandwidthPeriod(System{
-		Namespace: s.Namespace,
-		Subsystem: fmt.Sprintf("%s_current", s.Subsystem),
-		Version:   s.Version,
-	}, client, log)
-	projected := NewBandwidthPeriod(System{
-		Namespace: s.Namespace,
-		Subsystem: fmt.Sprintf("%s_projected", s.Subsystem),
-		Version:   s.Version,
-	}, client, log)
-
 	return BandwidthCollector{
 		System: s,
 		Client: client,
 		Log:    log,
 
-		Previous:  previous,
-		Current:   current,
-		Projected: projected,
+		Value: prometheus.NewDesc(
+			prometheus.BuildFQName(s.Namespace, "account_bandwidth", "value"),
+			"Bandwidth metric value",
+			[]string{"period", "type", "unit"},
+			nil,
+		),
 	}
 }
 
@@ -64,18 +48,44 @@ func (c BandwidthCollector) Collect(ch chan<- prometheus.Metric) {
 		return
 	}
 
-	// Collect metrics for each BandwidthPeriod
-	c.Previous.Collect(ch, bandwidth.PreviousMonth)
-	c.Current.Collect(ch, bandwidth.CurrentMonthToDate)
-	c.Projected.Collect(ch, bandwidth.CurrentMonthProjected)
+	// Collect metrics for each period
+	c.collectPeriod(ch, bandwidth.PreviousMonth, "previous")
+	c.collectPeriod(ch, bandwidth.CurrentMonthToDate, "current")
+	c.collectPeriod(ch, bandwidth.CurrentMonthProjected, "projected")
 }
 
-// Desc	ribe implements Prometheus' Collector interface and is used to describe metrics
+// collectPeriod collects metrics for a specific bandwidth period
+func (c BandwidthCollector) collectPeriod(ch chan<- prometheus.Metric, p govultr.AccountBandwidthPeriod, period string) {
+	// Map of metric name to its value and unit
+	metrics := map[string]struct {
+		value float64
+		unit  string
+	}{
+		"gb_in":                       {float64(p.GBIn), "GB"},
+		"gb_out":                      {float64(p.GBOut), "GB"},
+		"total_instance_hours":        {float64(p.TotalInstanceHours), "hours"},
+		"total_instance_count":        {float64(p.TotalInstanceCount), "count"},
+		"instance_bandwidth_credits":  {float64(p.InstanceBandwidthCredits), "credits"},
+		"free_bandwidth_credits":      {float64(p.FreeBandwidthCredits), "credits"},
+		"purchased_bandwidth_credits": {float64(p.PurchasedBandwidthCredits), "credits"},
+		"overage":                     {float64(p.Overage), "GB"},
+		"overage_unit_cost":           {float64(p.OverageUnitCost), "USD"},
+		"overage_cost":                {float64(p.OverageCost), "USD"},
+	}
+
+	for typeName, data := range metrics {
+		ch <- prometheus.MustNewConstMetric(
+			c.Value,
+			prometheus.GaugeValue,
+			data.value,
+			[]string{period, typeName, data.unit}...,
+		)
+	}
+}
+
+// Describe implements Prometheus' Collector interface and is used to describe metrics
 func (c BandwidthCollector) Describe(ch chan<- *prometheus.Desc) {
-	// Describe metrics for each BandwidthPeriod
-	c.Previous.Describe(ch)
-	c.Current.Describe(ch)
-	c.Projected.Describe(ch)
+	ch <- c.Value
 }
 
 // BandwidthPeriodCollector represents BandwidthPeriod
