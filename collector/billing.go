@@ -44,7 +44,7 @@ func getCollectorKey(product, description string) string {
 func (c *BillingCollector) getAllPendingCharges(ctx context.Context) ([]govultr.InvoiceItem, error) {
 	var allItems []govultr.InvoiceItem
 	options := &govultr.ListOptions{
-		PerPage: 100,
+		PerPage: 500,
 	}
 
 	for {

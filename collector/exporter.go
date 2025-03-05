@@ -46,10 +46,6 @@ func NewExporterCollector(s System, b Build, log logr.Logger) *ExporterCollector
 
 // Collect implements Prometheus' Collector interface and is used to collect metrics
 func (c *ExporterCollector) Collect(ch chan<- prometheus.Metric) {
-	log := c.Log.WithName("Collect")
-	log.Info("Metrics",
-		"start_time", c.Build.StartTime,
-	)
 	ch <- prometheus.MustNewConstMetric(
 		c.StartTime,
 		prometheus.GaugeValue,

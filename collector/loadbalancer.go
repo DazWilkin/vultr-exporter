@@ -52,24 +52,37 @@ func NewLoadBalancerCollector(s System, client *govultr.Client, log logr.Logger)
 func (c *LoadBalancerCollector) Collect(ch chan<- prometheus.Metric) {
 	log := c.Log.WithName("Collect")
 	ctx := context.Background()
-	options := &govultr.ListOptions{}
-	loadbalancers, meta, _, err := c.Client.LoadBalancer.List(ctx, options)
-	if err != nil {
-		log.Info("Unable to list LoadBalancers")
-		return
+
+	// Get all load balancers across all pages
+	var allLoadBalancers []govultr.LoadBalancer
+	options := &govultr.ListOptions{
+		PerPage: 100,
 	}
 
-	log.Info("Response",
-		"meta", meta,
-	)
+	for {
+		loadbalancers, meta, _, err := c.Client.LoadBalancer.List(ctx, options)
+		if err != nil {
+			log.Error(err, "Unable to list LoadBalancers")
+			return
+		}
+
+		allLoadBalancers = append(allLoadBalancers, loadbalancers...)
+
+		// If we've received all items or there's no next page, break
+		if meta != nil && meta.Links != nil && meta.Links.Next == "" {
+			break
+		}
+
+		// Move to next page
+		options.Cursor = meta.Links.Next
+	}
 
 	// Enumerate all of the loadbalancers
 	var wg sync.WaitGroup
-	for _, loadbalancer := range loadbalancers {
+	for _, loadbalancer := range allLoadBalancers {
 		wg.Add(1)
 		go func(lb govultr.LoadBalancer) {
 			defer wg.Done()
-			log.Info("Details")
 
 			ch <- prometheus.MustNewConstMetric(
 				c.Up,

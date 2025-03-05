@@ -82,13 +82,9 @@ func (c *AccountCollector) Collect(ch chan<- prometheus.Metric) {
 
 		account, _, err := c.Client.Account.Get(ctx)
 		if err != nil {
-			log.Info("Unable to get account details")
+			log.Error(err, "Unable to get account details")
 			return
 		}
-
-		log.Info("Response",
-			"account", account,
-		)
 
 		ch <- prometheus.MustNewConstMetric(
 			c.Balance,

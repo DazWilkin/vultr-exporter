@@ -34,7 +34,7 @@ func NewBandwidthCollector(s System, client *govultr.Client, log logr.Logger) Ba
 		Value: prometheus.NewDesc(
 			prometheus.BuildFQName(s.Namespace, "account_bandwidth", "value"),
 			"Bandwidth metric value",
-			[]string{"period", "metric", "unit"},
+			[]string{"period", "type", "unit"},
 			nil,
 		),
 	}
@@ -73,12 +73,12 @@ func (c BandwidthCollector) collectPeriod(ch chan<- prometheus.Metric, p govultr
 		"overage_cost":                {float64(p.OverageCost), "USD"},
 	}
 
-	for metricName, data := range metrics {
+	for typeName, data := range metrics {
 		ch <- prometheus.MustNewConstMetric(
 			c.Value,
 			prometheus.GaugeValue,
 			data.value,
-			[]string{period, metricName, data.unit}...,
+			[]string{period, typeName, data.unit}...,
 		)
 	}
 }

@@ -43,26 +43,37 @@ func NewReservedIPsCollector(s System, client *govultr.Client, log logr.Logger) 
 func (c *ReservedIPsCollector) Collect(ch chan<- prometheus.Metric) {
 	log := c.Log.WithName("Collect")
 	ctx := context.Background()
-	options := &govultr.ListOptions{}
-	ips, meta, _, err := c.Client.ReservedIP.List(ctx, options)
-	if err != nil {
-		log.Info("Unable to List")
-		return
+
+	// Get all reserved IPs across all pages
+	var allIPs []govultr.ReservedIP
+	options := &govultr.ListOptions{
+		PerPage: 100,
 	}
 
-	log.Info("Response",
-		"meta", meta,
-	)
+	for {
+		ips, meta, _, err := c.Client.ReservedIP.List(ctx, options)
+		if err != nil {
+			log.Error(err, "Unable to List")
+			return
+		}
+
+		allIPs = append(allIPs, ips...)
+
+		// If we've received all items or there's no next page, break
+		if meta != nil && meta.Links != nil && meta.Links.Next == "" {
+			break
+		}
+
+		// Move to next page
+		options.Cursor = meta.Links.Next
+	}
 
 	// Enumerate the IPs
 	var wg sync.WaitGroup
-	for _, ip := range ips {
+	for _, ip := range allIPs {
 		wg.Add(1)
 		go func(ip govultr.ReservedIP) {
 			defer wg.Done()
-			log.Info("Details",
-				"ReservedIP", ip,
-			)
 
 			ch <- prometheus.MustNewConstMetric(
 				c.Up,
