@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
-	"log"
 	stdlog "log"
 	"net/http"
 	"os"
@@ -13,6 +12,7 @@ import (
 	"time"
 
 	"github.com/DazWilkin/vultr-exporter/collector"
+	"github.com/go-logr/logr"
 	"github.com/go-logr/stdr"
 	"github.com/vultr/govultr/v3"
 	"golang.org/x/oauth2"
@@ -74,17 +74,21 @@ type Content struct {
 	MetricsPath string
 }
 
-func handleHealthz(w http.ResponseWriter, _ *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	if _, err := w.Write([]byte("ok")); err != nil {
-		log.Fatal("unable to write response")
+func handleHealthz(log logr.Logger) http.HandlerFunc {
+	return func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		if _, err := w.Write([]byte("ok")); err != nil {
+			log.Error(err, "unable to write response")
+		}
 	}
 }
-func handleRoot(w http.ResponseWriter, _ *http.Request) {
-	w.Header().Set("Content-Type", "text/html; charset=UTF-8")
-	t := template.Must(template.New("content").Parse(rootTemplate))
-	if err := t.ExecuteTemplate(w, "content", Content{MetricsPath: *metricsPath}); err != nil {
-		log.Fatal("unable to execute template")
+func handleRoot(log logr.Logger) http.HandlerFunc {
+	return func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=UTF-8")
+		t := template.Must(template.New("content").Parse(rootTemplate))
+		if err := t.ExecuteTemplate(w, "content", Content{MetricsPath: *metricsPath}); err != nil {
+			log.Error(err, "unable to execute template")
+		}
 	}
 }
 func NewVultrClient(name, key string) *govultr.Client {
@@ -152,8 +156,8 @@ func main() {
 	registry.MustRegister(collector.NewReservedIPsCollector(s, client, log))
 
 	mux := http.NewServeMux()
-	mux.Handle("/", http.HandlerFunc(handleRoot))
-	mux.Handle("/healthz", http.HandlerFunc(handleHealthz))
+	mux.Handle("/", handleRoot(log))
+	mux.Handle("/healthz", handleHealthz(log))
 	mux.Handle(*metricsPath, promhttp.HandlerFor(registry, promhttp.HandlerOpts{}))
 
 	log.Info("Starting",

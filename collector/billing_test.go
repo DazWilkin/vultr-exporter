@@ -84,7 +84,9 @@ func TestBillingCollector(t *testing.T) {
 
 	// Overrides the response that the client receives when it calls Billing.ListPendingCharges
 	mux.HandleFunc("/v2/billing/pending-charges", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, responsePendingCharges)
+		if _, err := fmt.Fprint(w, responsePendingCharges); err != nil {
+			t.Errorf("unable to write response: %v", err)
+		}
 	})
 
 	log := stdr.NewWithOptions(stdlog.New(os.Stderr, "", stdlog.LstdFlags), stdr.Options{LogCaller: stdr.All})
